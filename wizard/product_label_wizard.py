@@ -50,28 +50,37 @@ class ProductLabelWizard(models.TransientModel):
         active_ids = self.env.context.get('active_ids', [])
         active_model = self.env.context.get('active_model')
 
+        products = self.env['product.product']
+
         if active_model == 'product.product':
-            res['product_ids'] = [(6, 0, active_ids)]
+            products = self.env['product.product'].browse(active_ids)
         elif active_model == 'product.template':
             templates = self.env['product.template'].browse(active_ids)
-            product_ids = templates.mapped('product_variant_ids').ids
-            res['product_ids'] = [(6, 0, product_ids)]
+            products = templates.mapped('product_variant_ids')
         elif active_model == 'sale.order':
             orders = self.env['sale.order'].browse(active_ids)
-            product_ids = orders.mapped('order_line.product_id').ids
-            res['product_ids'] = [(6, 0, product_ids)]
+            products = orders.mapped('order_line.product_id')
         elif active_model == 'purchase.order':
             orders = self.env['purchase.order'].browse(active_ids)
-            product_ids = orders.mapped('order_line.product_id').ids
-            res['product_ids'] = [(6, 0, product_ids)]
+            products = orders.mapped('order_line.product_id')
         elif active_model == 'stock.picking':
             pickings = self.env['stock.picking'].browse(active_ids)
-            product_ids = pickings.mapped('move_ids.product_id').ids
-            res['product_ids'] = [(6, 0, product_ids)]
+            products = pickings.mapped('move_ids.product_id')
         elif active_model == 'account.move':
             moves = self.env['account.move'].browse(active_ids)
-            product_ids = moves.mapped('invoice_line_ids.product_id').ids
-            res['product_ids'] = [(6, 0, product_ids)]
+            products = moves.mapped('invoice_line_ids.product_id')
+
+        if products:
+            res['product_ids'] = [(6, 0, products.ids)]
+            # Initialize line_ids with products
+            quantity = res.get('quantity_per_product', 1) or 1
+            lines = []
+            for product in products:
+                lines.append((0, 0, {
+                    'product_id': product.id,
+                    'quantity': quantity,
+                }))
+            res['line_ids'] = lines
 
         return res
 
