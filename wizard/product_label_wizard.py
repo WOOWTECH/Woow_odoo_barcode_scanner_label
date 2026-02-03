@@ -84,38 +84,64 @@ class ProductLabelWizard(models.TransientModel):
 
         return res
 
+    def _prepare_label_data(self, product, quantity, lot_name=''):
+        """Prepare label data for a single product.
+
+        Args:
+            product: product.product record
+            quantity: number of labels to print
+            lot_name: optional lot/serial name
+
+        Returns:
+            list of label data dictionaries
+        """
+        labels = []
+
+        # Get price
+        price = product.list_price
+        if self.pricelist_id:
+            price = self.pricelist_id._get_product_price(product, 1.0)
+
+        # Generate barcode image
+        barcode_image = False
+        if product.barcode:
+            barcode_image = self.template_id.generate_barcode_image(
+                product.barcode
+            )
+
+        for _ in range(quantity):
+            labels.append({
+                'product': product,
+                'barcode': product.barcode or product.default_code or '',
+                'barcode_image': barcode_image,
+                'price': price,
+                'lot': lot_name,
+            })
+
+        return labels
+
     def action_print_labels(self):
         """Generate and print labels."""
         self.ensure_one()
 
         # Prepare data for the report
         lines_data = []
-        for line in self.line_ids:
-            if line.quantity > 0:
-                product = line.product_id
 
-                # Get price
-                price = product.list_price
-                if self.pricelist_id:
-                    price = self.pricelist_id._get_product_price(
-                        product, 1.0
+        # Try to use line_ids first
+        if self.line_ids:
+            for line in self.line_ids:
+                if line.quantity > 0:
+                    lot_name = line.lot_id.name if line.lot_id else ''
+                    lines_data.extend(
+                        self._prepare_label_data(line.product_id, line.quantity, lot_name)
                     )
-
-                # Generate barcode image
-                barcode_image = False
-                if product.barcode:
-                    barcode_image = self.template_id.generate_barcode_image(
-                        product.barcode
-                    )
-
-                for _ in range(line.quantity):
-                    lines_data.append({
-                        'product': product,
-                        'barcode': product.barcode or product.default_code or '',
-                        'barcode_image': barcode_image,
-                        'price': price,
-                        'lot': line.lot_id.name if line.lot_id else '',
-                    })
+        # Fallback: use product_ids directly if line_ids is empty
+        elif self.product_ids:
+            quantity = self.quantity_per_product or 1
+            for product in self.product_ids:
+                lines_data.extend(
+                    self._prepare_label_data(product, quantity)
+                )
 
         # Return report action
         return self.env.ref(
