@@ -1,0 +1,1 @@
+# Woow_odoo_barcode_scanner_label
