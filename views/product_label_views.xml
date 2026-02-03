@@ -1,0 +1,126 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- Label Template List View -->
+    <record id="product_label_template_list_view" model="ir.ui.view">
+        <field name="name">product.label.template.list</field>
+        <field name="model">product.label.template</field>
+        <field name="arch" type="xml">
+            <list string="Label Templates">
+                <field name="sequence" widget="handle"/>
+                <field name="name"/>
+                <field name="barcode_type"/>
+                <field name="label_width"/>
+                <field name="label_height"/>
+                <field name="labels_per_row"/>
+                <field name="labels_per_column"/>
+                <field name="active"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- Label Template Form View -->
+    <record id="product_label_template_form_view" model="ir.ui.view">
+        <field name="name">product.label.template.form</field>
+        <field name="model">product.label.template</field>
+        <field name="arch" type="xml">
+            <form string="Label Template">
+                <sheet>
+                    <div class="oe_button_box" name="button_box"/>
+                    <widget name="web_ribbon" title="Archived" bg_color="text-bg-danger" invisible="active"/>
+                    <div class="oe_title">
+                        <h1>
+                            <field name="name" placeholder="Template Name"/>
+                        </h1>
+                    </div>
+
+                    <group>
+                        <group string="Label Dimensions">
+                            <field name="label_width"/>
+                            <field name="label_height"/>
+                            <field name="labels_per_row"/>
+                            <field name="labels_per_column"/>
+                        </group>
+                        <group string="Barcode Settings">
+                            <field name="barcode_type"/>
+                            <field name="barcode_width"/>
+                            <field name="barcode_height"/>
+                        </group>
+                    </group>
+
+                    <group>
+                        <group string="Content Options">
+                            <field name="show_product_name"/>
+                            <field name="show_internal_ref"/>
+                            <field name="show_barcode_text"/>
+                            <field name="show_price"/>
+                            <field name="show_price_with_tax" invisible="not show_price"/>
+                            <field name="show_company_logo"/>
+                            <field name="show_lot_serial"/>
+                            <field name="show_expiry_date"/>
+                        </group>
+                        <group string="Styling">
+                            <field name="font_size"/>
+                            <field name="price_font_size"/>
+                            <field name="sequence"/>
+                            <field name="active"/>
+                        </group>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- Label Template Action -->
+    <record id="product_label_template_action" model="ir.actions.act_window">
+        <field name="name">Label Templates</field>
+        <field name="res_model">product.label.template</field>
+        <field name="view_mode">list,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Create your first label template
+            </p>
+            <p>
+                Define label templates for printing product barcodes and QR codes.
+            </p>
+        </field>
+    </record>
+
+    <!-- Extend Product Form View with Print Label Button -->
+    <record id="product_product_form_view_label" model="ir.ui.view">
+        <field name="name">product.product.form.label</field>
+        <field name="model">product.product</field>
+        <field name="inherit_id" ref="product.product_normal_form_view"/>
+        <field name="arch" type="xml">
+            <xpath expr="//div[@name='button_box']" position="inside">
+                <button name="action_print_label"
+                        type="object"
+                        class="oe_stat_button"
+                        icon="fa-barcode">
+                    <span>Print Labels</span>
+                </button>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- Extend Product Template Form View with Print Label Button -->
+    <record id="product_template_form_view_label" model="ir.ui.view">
+        <field name="name">product.template.form.label</field>
+        <field name="model">product.template</field>
+        <field name="inherit_id" ref="product.product_template_only_form_view"/>
+        <field name="arch" type="xml">
+            <xpath expr="//div[@name='button_box']" position="inside">
+                <button name="action_print_label"
+                        type="object"
+                        class="oe_stat_button"
+                        icon="fa-barcode">
+                    <span>Print Labels</span>
+                </button>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- Note: Users access Label Templates via the "Print Labels" button on products -->
+    <!-- Or through the Settings > Technical > Labels menu if installed with sale module -->
+
+</odoo>

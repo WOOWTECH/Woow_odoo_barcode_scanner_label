@@ -1,0 +1,141 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <template id="report_product_label">
+        <t t-call="web.html_container">
+            <t t-set="template" t-value="docs.template_id"/>
+            <t t-set="labels_per_row" t-value="template.labels_per_row or 4"/>
+            <t t-set="labels_per_page" t-value="labels_per_row * (template.labels_per_column or 9)"/>
+
+            <!-- Build a flat list of all labels to print -->
+            <t t-set="all_labels" t-value="[]"/>
+            <t t-foreach="docs.line_ids" t-as="line">
+                <t t-foreach="range(line.quantity)" t-as="qty_idx">
+                    <t t-set="all_labels" t-value="all_labels + [line]"/>
+                </t>
+            </t>
+
+            <!-- Iterate through labels, creating pages and rows as needed -->
+            <t t-set="total_labels" t-value="len(all_labels)"/>
+            <t t-set="total_pages" t-value="(total_labels + labels_per_page - 1) // labels_per_page"/>
+
+            <t t-foreach="range(total_pages)" t-as="page_idx">
+                <div class="page" style="padding: 5mm;">
+                    <table class="label-table" style="width: 100%; border-collapse: collapse;">
+                        <tbody>
+                            <t t-set="page_start" t-value="page_idx * labels_per_page"/>
+                            <t t-set="page_end" t-value="min(page_start + labels_per_page, total_labels)"/>
+                            <t t-set="rows_in_page" t-value="((page_end - page_start) + labels_per_row - 1) // labels_per_row"/>
+
+                            <t t-foreach="range(rows_in_page)" t-as="row_idx">
+                                <tr>
+                                    <t t-set="row_start" t-value="page_start + row_idx * labels_per_row"/>
+                                    <t t-set="row_end" t-value="min(row_start + labels_per_row, page_end)"/>
+
+                                    <t t-foreach="range(row_start, row_end)" t-as="label_idx">
+                                        <t t-set="line" t-value="all_labels[label_idx]"/>
+                                        <td class="label-cell" t-attf-style="
+                                            width: #{100 // labels_per_row}%;
+                                            height: #{template.label_height}mm;
+                                            padding: 2mm;
+                                            border: 1px dashed #ccc;
+                                            vertical-align: top;
+                                            text-align: center;
+                                            font-family: Arial, sans-serif;
+                                        ">
+                                            <!-- Product Name -->
+                                            <t t-if="template.show_product_name">
+                                                <div t-attf-style="
+                                                    font-size: #{template.font_size}pt;
+                                                    font-weight: bold;
+                                                    overflow: hidden;
+                                                    text-overflow: ellipsis;
+                                                    white-space: nowrap;
+                                                    margin-bottom: 1mm;
+                                                ">
+                                                    <t t-esc="line.product_id.name"/>
+                                                </div>
+                                            </t>
+
+                                            <!-- Internal Reference -->
+                                            <t t-if="template.show_internal_ref and line.product_id.default_code">
+                                                <div t-attf-style="
+                                                    font-size: #{template.font_size - 2}pt;
+                                                    color: #666;
+                                                    margin-bottom: 1mm;
+                                                ">
+                                                    [<t t-esc="line.product_id.default_code"/>]
+                                                </div>
+                                            </t>
+
+                                            <!-- Barcode Image -->
+                                            <t t-if="line.product_id.barcode">
+                                                <div style="margin: 2mm 0;">
+                                                    <t t-if="template.barcode_type == 'qr'">
+                                                        <img t-if="line.product_id.qr_code_image"
+                                                             t-attf-src="data:image/png;base64,#{line.product_id.qr_code_image}"
+                                                             t-attf-style="width: #{template.barcode_width}mm; height: #{template.barcode_height}mm;"/>
+                                                    </t>
+                                                    <t t-else="">
+                                                        <img t-if="line.product_id.barcode_image"
+                                                             t-attf-src="data:image/png;base64,#{line.product_id.barcode_image}"
+                                                             t-attf-style="width: #{template.barcode_width}mm; height: #{template.barcode_height}mm;"/>
+                                                    </t>
+                                                </div>
+                                            </t>
+
+                                            <!-- Barcode Text -->
+                                            <t t-if="template.show_barcode_text and line.product_id.barcode">
+                                                <div t-attf-style="
+                                                    font-size: #{template.font_size - 2}pt;
+                                                    font-family: monospace;
+                                                ">
+                                                    <t t-esc="line.product_id.barcode"/>
+                                                </div>
+                                            </t>
+
+                                            <!-- Price -->
+                                            <t t-if="template.show_price">
+                                                <div t-attf-style="
+                                                    font-size: #{template.price_font_size}pt;
+                                                    font-weight: bold;
+                                                    color: #000;
+                                                    margin-top: 1mm;
+                                                ">
+                                                    <t t-esc="'%.2f' % line.product_id.list_price"/>
+                                                    <t t-esc="line.product_id.currency_id.symbol or '€'"/>
+                                                </div>
+                                            </t>
+
+                                            <!-- Lot/Serial -->
+                                            <t t-if="template.show_lot_serial and line.lot_id">
+                                                <div t-attf-style="
+                                                    font-size: #{template.font_size - 2}pt;
+                                                    color: #666;
+                                                ">
+                                                    Lot: <t t-esc="line.lot_id.name"/>
+                                                </div>
+                                            </t>
+                                        </td>
+                                    </t>
+
+                                    <!-- Fill empty cells if row is not complete -->
+                                    <t t-set="empty_cells" t-value="labels_per_row - (row_end - row_start)"/>
+                                    <t t-foreach="range(empty_cells)" t-as="empty_idx">
+                                        <td class="label-cell" t-attf-style="
+                                            width: #{100 // labels_per_row}%;
+                                            height: #{template.label_height}mm;
+                                            padding: 2mm;
+                                            border: 1px dashed #ccc;
+                                        "></td>
+                                    </t>
+                                </tr>
+                            </t>
+                        </tbody>
+                    </table>
+                </div>
+            </t>
+        </t>
+    </template>
+
+</odoo>

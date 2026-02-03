@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+
+        <!-- Paper format for labels (A4 with small margins) -->
+        <record id="paperformat_product_label" model="report.paperformat">
+            <field name="name">Product Label Format</field>
+            <field name="default" eval="False"/>
+            <field name="format">A4</field>
+            <field name="orientation">Portrait</field>
+            <field name="margin_top">5</field>
+            <field name="margin_bottom">5</field>
+            <field name="margin_left">5</field>
+            <field name="margin_right">5</field>
+            <field name="header_line" eval="False"/>
+            <field name="header_spacing">0</field>
+            <field name="dpi">96</field>
+        </record>
+
+        <!-- Default label template -->
+        <record id="product_label_template_default" model="product.label.template">
+            <field name="name">Standard Label (50x30mm)</field>
+            <field name="sequence">1</field>
+            <field name="label_width">50</field>
+            <field name="label_height">30</field>
+            <field name="labels_per_row">4</field>
+            <field name="labels_per_column">9</field>
+            <field name="barcode_type">ean13</field>
+            <field name="barcode_width">40</field>
+            <field name="barcode_height">12</field>
+            <field name="show_product_name" eval="True"/>
+            <field name="show_internal_ref" eval="True"/>
+            <field name="show_barcode_text" eval="True"/>
+            <field name="show_price" eval="True"/>
+            <field name="font_size">8</field>
+            <field name="price_font_size">12</field>
+        </record>
+
+        <!-- Large label template with QR -->
+        <record id="product_label_template_large_qr" model="product.label.template">
+            <field name="name">Large Label with QR (70x50mm)</field>
+            <field name="sequence">2</field>
+            <field name="label_width">70</field>
+            <field name="label_height">50</field>
+            <field name="labels_per_row">2</field>
+            <field name="labels_per_column">5</field>
+            <field name="barcode_type">qr</field>
+            <field name="barcode_width">35</field>
+            <field name="barcode_height">35</field>
+            <field name="show_product_name" eval="True"/>
+            <field name="show_internal_ref" eval="True"/>
+            <field name="show_barcode_text" eval="False"/>
+            <field name="show_price" eval="True"/>
+            <field name="show_company_logo" eval="True"/>
+            <field name="font_size">10</field>
+            <field name="price_font_size">14</field>
+        </record>
+
+        <!-- Small price tag template -->
+        <record id="product_label_template_price_tag" model="product.label.template">
+            <field name="name">Price Tag (40x20mm)</field>
+            <field name="sequence">3</field>
+            <field name="label_width">40</field>
+            <field name="label_height">20</field>
+            <field name="labels_per_row">5</field>
+            <field name="labels_per_column">14</field>
+            <field name="barcode_type">ean13</field>
+            <field name="barcode_width">35</field>
+            <field name="barcode_height">8</field>
+            <field name="show_product_name" eval="True"/>
+            <field name="show_internal_ref" eval="False"/>
+            <field name="show_barcode_text" eval="False"/>
+            <field name="show_price" eval="True"/>
+            <field name="font_size">7</field>
+            <field name="price_font_size">11</field>
+        </record>
+
+    </data>
+</odoo>

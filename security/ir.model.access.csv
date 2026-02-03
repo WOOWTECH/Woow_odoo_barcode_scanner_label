@@ -1,0 +1,5 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_product_label_template_user,product.label.template.user,model_product_label_template,base.group_user,1,0,0,0
+access_product_label_template_manager,product.label.template.manager,model_product_label_template,base.group_system,1,1,1,1
+access_product_label_wizard,product.label.wizard,model_product_label_wizard,base.group_user,1,1,1,1
+access_product_label_line,product.label.line,model_product_label_line,base.group_user,1,1,1,1
